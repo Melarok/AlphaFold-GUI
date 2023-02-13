@@ -89,10 +89,7 @@ class Dialog(QtWidgets.QDialog):
         # check abort status
         if abort == False:
             # construct command
-            if self.check_useDate.isChecked():
-                command= "python3 /opt/AlphaFold/docker/run_docker.py --fasta_paths="+self.filename+" --max_template_date="+date+" --model_preset="+model+" --data_dir=/mnt/Data/AlphaFold-DBs --output_dir="+self.foldername+" 2>&1 | tee "+self.foldername+"/"+self.filename+"/AF.log"
-            else:
-                command= "python3 /opt/AlphaFold/docker/run_docker.py --fasta_paths="+self.filename+" --model_preset="+model+" --data_dir=/mnt/Data/AlphaFold-DBs --output_dir="+self.foldername+" 2>&1 | tee "+self.foldername+"/AF.log"
+            command = "conda activate alphafold && python3 /opt/alphafold/docker/run_docker.py --fasta_paths="+self.filename+" --max_template_date="+date+" --model_preset="+model+" --data_dir=/mnt/Data/AlphaFold-DBs --output_dir="+self.foldername+" 2>&1 | tee "+self.foldername+"/"+self.filename+"/AF.log"
             #cmd = "echo "+"'"+command+"'"+" 2>&1 | tee "+self.foldername+"/"+self.filename+"/AF.log"
             #cmd = "n=0; while true; do echo 'waiting since '$n' seconds'; n=$[n+1] ; sleep 1; done"+" 2>&1 | tee "+self.foldername+"/AF.log"
 
@@ -107,7 +104,7 @@ class Dialog(QtWidgets.QDialog):
 
 
     def onFinish(self):
-        print("Done")
+        self.text_log.append("Done")
 
         # unlock ui elements
         self.browse_in.setEnabled(True)
@@ -123,6 +120,8 @@ class Dialog(QtWidgets.QDialog):
     def abortPredict(self):
         self.text_log.append("Aborting!")
         self.thread.terminate()
+        abortcmd = "docker kill $(docker ps -q --filter ancestor=alphafold)"
+        subprocess.Popen(abortcmd, shell=True)
 
         # unlock ui elements
         self.browse_in.setEnabled(True)
